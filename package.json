@@ -1,0 +1,38 @@
+{
+  "name": "hemera",
+  "version": "0.0.0",
+  "description": "Simple provider resolver",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "commit": "commit",
+    "release": "release-it",
+    "husky": "husky install",
+    "lint": "eslint --cache --ext .ts,.tsx src",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "Fernando Berti <bertilxi@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "ares": "github:intrepyd/ares#0.1.4"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "skipChecks": true,
+      "publish": false
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "conventionalcommits",
+        "infile": "CHANGELOG.md"
+      }
+    }
+  }
+}
