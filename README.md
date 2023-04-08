@@ -5,70 +5,54 @@
 ### gist
 
 ```ts
-enum DatabaseDriverType {
-  DEFAULT = "DEFAULT",
-  POSTGRES = "POSTGRES",
-  MYSQL = "MYSQL",
+interface DatabaseDriver<Connection> {
+  databaseName: string;
+  connection: Connection;
+
+  connect(uri: string, databaseName: string): Promise<void>;
+  getTables(): Promise<Table[]>;
+  getRows(tableName: string): Promise<Row[]>;
 }
 
-class DatabaseDriver<Connection> {
-  public databaseName = "";
-  public connection!: Connection;
+const BaseDatabaseDriver: DatabaseDriver<any> = {
+  databaseName: "",
+  connection: ...,
 
-  public connect(uri: string, databaseName: string) {
-    ...
-  }
+  connect(uri, databaseName) { ... },
 
-  public getTables(): Promise<Table[]> {
-    ...
-  }
+  getTables() { ... },
 
-  public getRows(tableName: string): Promise<Row[]> {
-    ...
-  }
-}
+  getRows(tableName) { ... },
+};
 
-export class MySqlDatabaseDriver extends DatabaseDriver<Connection> {
-  public connect(uri: string, databaseName: string) {
-    ...
-  }
+const MySqlDatabaseDriver: DatabaseDriver<any> = {
+  ...BaseDatabaseDriver,
 
-  public async getTables(): Promise<Table[]> {
-    ...
-  }
+  connect(uri, databaseName) { ... },
 
-  public async getRows(tableName: string): Promise<Row[]> {
-    ...
-  }
-}
+  getTables() { ... },
 
-export class PostgresDatabaseDriver extends DatabaseDriver<Connection> {
-  public connect(uri: string, databaseName: string) {
-    ...
-  }
+  getRows(tableName) { ... },
+};
 
-  public async getTables(): Promise<Table[]> {
-    ...
-  }
+const PostgresDatabaseDriver: DatabaseDriver<any> = {
+  ...BaseDatabaseDriver,
 
-  public async getRows(tableName: string): Promise<Row[]> {
-    ...
-  }
-}
+  connect(uri, databaseName) { ... },
 
-const driverResolver = hemera(
-  [DatabaseDriverType.MYSQL, MySqlDatabaseDriver],
-  [DatabaseDriverType.POSTGRES, PostgresDatabaseDriver],
-  [DatabaseDriverType.DEFAULT, DatabaseDriver]
+  getTables() { ... },
+
+  getRows(tableName) { ... },
+};
+
+const databaseDriver = new Hemera(
+  [DriverType.MYSQL, MySqlDatabaseDriver],
+  [DriverType.POSTGRES, PostgresDatabaseDriver]
 );
 
-const driver = await driverResolver(DatabaseDriverType.MYSQL);
+const driver = databaseDriver.get(DriverType.POSTGRES);
 
-await driver.connect("some-url", "test-db");
+await driver.connect(...);
 
 const tables = await driver.getTables();
-
-const rowList = await Promise.all(
-  tables.map((table) => driver.getRows(table.name))
-);
 ```

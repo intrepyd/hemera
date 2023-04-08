@@ -1,63 +1,41 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-type Constructor<T, Arguments extends unknown[] = any[]> = new (
-  ...arguments_: Arguments
-) => T;
-
-type InstanceType<T extends new (...arguments_: any) => any> = T extends new (
-  ...arguments_: any
-) => infer R
-  ? R
-  : any;
-
 const errors = {
   noInstance: () => new Error("Invalid resolver"),
 };
 
-type AsyncHandler<Resolver extends Constructor<InstanceType<Resolver>>> = (
-  instance: InstanceType<Resolver>
-) => Promise<boolean>;
+type AsyncResolver<Instance> = (instance: Instance) => Promise<boolean>;
 
-export function hemera<
-  Enum extends string,
-  Resolver extends Constructor<InstanceType<Resolver>>
->(
-  ...resolvers: [Enum, Resolver][]
-): (handler: Enum | AsyncHandler<Resolver>) => Promise<InstanceType<Resolver>> {
-  return async function (handler: Enum | AsyncHandler<Resolver>) {
-    const instanceMap = new Map<Enum, InstanceType<Resolver>>();
+export default class Hemera<Enum extends string, Instance> {
+  public instances: Map<Enum, Instance>;
+
+  constructor(...resolvers: [Enum, Instance][]) {
+    this.instances = new Map<Enum, Instance>();
 
     for (const [type, resolver] of new Map(resolvers)) {
-      const instance = new resolver();
-      instanceMap.set(type, instance);
+      this.instances.set(type, resolver);
+    }
+  }
+
+  public get(type: Enum): Instance {
+    const instance = this.instances.get(type);
+
+    if (!instance) {
+      throw errors.noInstance();
     }
 
-    function getSafeInstance(handler: Enum) {
-      const instance = instanceMap.get(handler);
+    return instance;
+  }
 
-      if (!instance) {
-        throw errors.noInstance();
-      }
+  public async resolve(resolver: AsyncResolver<Instance>): Promise<Instance> {
+    for (const [type] of this.instances) {
+      const instance = this.get(type);
 
-      return instance;
-    }
-
-    if (typeof handler === "string") {
-      return getSafeInstance(handler);
-    }
-
-    for (const [_, instance] of instanceMap) {
-      if (!instance) {
-        throw errors.noInstance();
-      }
-
-      const result = await handler(instance);
+      const result = await resolver(instance);
 
       if (result) {
         return instance;
       }
     }
 
-    return getSafeInstance("DEFAULT" as Enum);
-  };
+    throw errors.noInstance();
+  }
 }
