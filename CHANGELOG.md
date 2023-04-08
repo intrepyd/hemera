@@ -1,5 +1,7 @@
 
 
+## [0.1.1](https://github.com/intrepyd/hemera/compare/0.1.0...0.1.1) (2023-04-08)
+
 ## 0.1.0 (2023-04-05)
 
 
