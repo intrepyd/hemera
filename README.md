@@ -5,49 +5,44 @@
 ### gist
 
 ```ts
-interface DatabaseDriver<Connection> {
-  databaseName: string;
-  connection: Connection;
+export class DatabaseDriver<Connection = any> {
+  public declare static type: DriverType;
+  public static base = DatabaseDriver;
+  public databaseName = "";
+  public declare connection: Connection;
 
-  connect(uri: string, databaseName: string): Promise<void>;
-  getTables(): Promise<Table[]>;
-  getRows(tableName: string): Promise<Row[]>;
+  connect(_uri: string, _databaseName: string): Promise<void> {...}
+
+  getTables(): Promise<Table[]> {...}
+
+  getRows(_tableName: string): Promise<Row[]> {...}
 }
 
-const BaseDatabaseDriver: DatabaseDriver<any> = {
-  databaseName: "",
-  connection: ...,
+export class MySqlDatabaseDriver extends DatabaseDriver<KnexType> {
+  public static type: DriverType = DriverType.MYSQL;
 
-  connect(uri, databaseName) { ... },
+  connect(uri: string, databaseName: string) {...}
 
-  getTables() { ... },
+  getTables(): Promise<Table[]> {...}
 
-  getRows(tableName) { ... },
-};
+  getRows(tableName: string): Promise<Row[]> {...}
+}
 
-const MySqlDatabaseDriver: DatabaseDriver<any> = {
-  ...BaseDatabaseDriver,
+export class PostgresDatabaseDriver extends DatabaseDriver<KnexType> {
+  public static type: DriverType = DriverType.POSTGRES;
 
-  connect(uri, databaseName) { ... },
+  connect(uri: string, databaseName: string) {...}
 
-  getTables() { ... },
+  getTables(): Promise<Table[]> {...}
 
-  getRows(tableName) { ... },
-};
+  getRows(tableName: string): Promise<Row[]> {...}
+}
 
-const PostgresDatabaseDriver: DatabaseDriver<any> = {
-  ...BaseDatabaseDriver,
+import hemera from "hemera";
 
-  connect(uri, databaseName) { ... },
-
-  getTables() { ... },
-
-  getRows(tableName) { ... },
-};
-
-const databaseDriver = new Hemera(
-  [DriverType.MYSQL, MySqlDatabaseDriver],
-  [DriverType.POSTGRES, PostgresDatabaseDriver]
+const databaseDriver = hemera(
+  MySqlDatabaseDriver,
+  PostgresDatabaseDriver
 );
 
 const driver = databaseDriver.get(DriverType.POSTGRES);
